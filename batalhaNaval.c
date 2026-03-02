@@ -1,53 +1,78 @@
 #include <stdio.h>
+#include <stdlib.h> // Para a função abs()
 
-#define TAMANHO_TABULEIRO 10
-#define TAMANHO_NAVIO 3
-#define CELULA_NAVIO 3
-#define CELULA_AGUA 0
+#define TAM_TAB 10
+#define TAM_HAB 5
+#define NAVIO 3
+#define HABILIDADE 5
+#define AGUA 0
+
+/**
+ * Lógica Geométrica:
+ * - Cone: Preenche colunas expandindo conforme a linha desce.
+ * - Cruz: Preenche a linha central e a coluna central.
+ * - Octaedro: Preenche onde a distância de Manhattan (soma das distâncias do centro) é constante.
+ */
 
 int main() {
-    // 1. Inicialização do Tabuleiro 10x10 com 0 (Água)
-    int tabuleiro[TAMANHO_TABULEIRO][TAMANHO_TABULEIRO] = {0};
+    int tabuleiro[TAM_TAB][TAM_TAB] = {0};
 
-    // --- POSICIONAMENTO DOS NAVIOS ---
+    // 1. Posicionamento de Navios (Exemplo do nível anterior)
+    for (int j = 1; j <= 3; j++) tabuleiro[1][j] = NAVIO; // Horizontal
+    for (int i = 4; i <= 6; i++) tabuleiro[i][8] = NAVIO; // Vertical
 
-    // Navio 1: Horizontal (Linha 1, Colunas 1, 2, 3)
-    for (int j = 1; j <= TAMANHO_NAVIO; j++) {
-        tabuleiro[1][j] = CELULA_NAVIO;
+    // 2. Definição das Matrizes de Habilidade (5x5)
+    int cone[TAM_HAB][TAM_HAB] = {0};
+    int cruz[TAM_HAB][TAM_HAB] = {0};
+    int octaedro[TAM_HAB][TAM_HAB] = {0};
+    int centro = TAM_HAB / 2;
+
+    // --- Construção Dinâmica das Habilidades ---
+    for (int i = 0; i < TAM_HAB; i++) {
+        for (int j = 0; j < TAM_HAB; j++) {
+            // Lógica do CONE (Triângulo apontando para baixo)
+            if (i >= centro && j >= centro - (i - centro) && j <= centro + (i - centro)) {
+                cone[i][j] = 1;
+            }
+            // Lógica da CRUZ
+            if (i == centro || j == centro) {
+                cruz[i][j] = 1;
+            }
+            // Lógica do OCTAEDRO (Losango)
+            // Baseado na fórmula: |i - centro| + |j - centro| <= raio
+            if (abs(i - centro) + abs(j - centro) <= centro) {
+                octaedro[i][j] = 1;
+            }
+        }
     }
 
-    // Navio 2: Vertical (Coluna 7, Linhas 4, 5, 6)
-    for (int i = 4; i < 4 + TAMANHO_NAVIO; i++) {
-        tabuleiro[i][7] = CELULA_NAVIO;
+    // 3. Sobreposição no Tabuleiro
+    // Vamos definir pontos de origem (onde o centro da habilidade 5x5 ficará)
+    int origemL_Cone = 2, origemC_Cone = 5;
+    int origemL_Cruz = 7, origemC_Cruz = 1;
+    int origemL_Octa = 6, origemC_Octa = 6;
+
+    // Exemplo de aplicação: Octaedro
+    for (int i = 0; i < TAM_HAB; i++) {
+        for (int j = 0; j < TAM_HAB; j++) {
+            int destL = origemL_Octa + i - centro;
+            int destC = origemC_Octa + j - centro;
+
+            // Validação de bordas: Garante que não escrevemos fora do tabuleiro [0-9]
+            if (destL >= 0 && destL < TAM_TAB && destC >= 0 && destC < TAM_TAB) {
+                if (octaedro[i][j] == 1) {
+                    tabuleiro[destL][destC] = HABILIDADE;
+                }
+            }
+        }
     }
 
-    // Navio 3: Diagonal Principal (Crescente: Linha e Coluna aumentam)
-    // Coordenada inicial: (2, 5) -> Ocupará (2, 5), (3, 6), (4, 7)
-    // Nota: Como o Navio 2 usa (4, 7), vamos ajustar para (2, 4) para evitar sobreposição.
-    int d1L = 2, d1C = 4;
-    for (int k = 0; k < TAMANHO_NAVIO; k++) {
-        tabuleiro[d1L + k][d1C + k] = CELULA_NAVIO;
-    }
+    // 4. Exibição do Tabuleiro Final
+    printf("--- BATALHA NAVAL: MESTRE ---\n\n");
+    printf("Legenda: 0=Agua | 3=Navio | 5=Habilidade\n\n");
 
-    // Navio 4: Diagonal Secundária (Decrescente: Linha aumenta, Coluna diminui)
-    // Coordenada inicial: (7, 2) -> Ocupará (7, 2), (8, 1), (9, 0)
-    int d2L = 7, d2C = 2;
-    for (int k = 0; k < TAMANHO_NAVIO; k++) {
-        tabuleiro[d2L + k][d2C - k] = CELULA_NAVIO;
-    }
-
-    // --- EXIBIÇÃO DO TABULEIRO ---
-    printf("--- BATALHA NAVAL: NÍVEL AVENTUREIRO ---\n\n");
-
-    // Cabeçalho das colunas
-    printf("    ");
-    for (int j = 0; j < TAMANHO_TABULEIRO; j++) printf("%d ", j);
-    printf("\n");
-
-    // Linhas do tabuleiro
-    for (int i = 0; i < TAMANHO_TABULEIRO; i++) {
-        printf("%d | ", i); // Índice da linha
-        for (int j = 0; j < TAMANHO_TABULEIRO; j++) {
+    for (int i = 0; i < TAM_TAB; i++) {
+        for (int j = 0; j < TAM_TAB; j++) {
             printf("%d ", tabuleiro[i][j]);
         }
         printf("\n");
