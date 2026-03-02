@@ -1,66 +1,53 @@
 #include <stdio.h>
 
-#define TAM 10 // Tamanho do tabuleiro 10x10
+#define TAMANHO_TABULEIRO 10
+#define TAMANHO_NAVIO 3
+#define CELULA_NAVIO 3
+#define CELULA_AGUA 0
 
 int main() {
-    // Inicialização do tabuleiro preenchido com 0 (água)
-    int tabuleiro[TAM][TAM] = {0};
+    // 1. Inicialização do Tabuleiro 10x10 com 0 (Água)
+    int tabuleiro[TAMANHO_TABULEIRO][TAMANHO_TABULEIRO] = {0};
 
-    // --- NÍVEL NOVATO & AVENTUREIRO: Posicionamento de Navios ---
-    
-    // Navio Horizontal (Tamanho 3) na Linha 1
-    for (int j = 1; j <= 3; j++) tabuleiro[1][j] = 3;
+    // --- POSICIONAMENTO DOS NAVIOS ---
 
-    // Navio Vertical (Tamanho 3) na Coluna 5
-    for (int i = 6; i <= 8; i++) tabuleiro[i][5] = 3;
-
-    // Navio Diagonal 1 (Tamanho 3) - Noroeste para Sudeste
-    for (int i = 0; i < 3; i++) tabuleiro[i + 7][i + 1] = 3;
-
-    // Navio Diagonal 2 (Tamanho 3) - Sudoeste para Nordeste
-    for (int i = 0; i < 3; i++) tabuleiro[4 - i][i + 7] = 3;
-
-
-    // --- NÍVEL MESTRE: Habilidades Especiais ---
-    // Usaremos o valor 1 para representar a área afetada pelas habilidades
-
-    // 1. Habilidade em Cone (Base na linha 4, coluna 2)
-    // Representa um triângulo: topo (1), meio (3), base (5)
-    int coneTopoLinha = 2, coneTopoColuna = 4;
-    for (int i = 0; i < 3; i++) { // Altura do cone
-        for (int j = -i; j <= i; j++) { // Largura expandindo a cada linha
-            tabuleiro[coneTopoLinha + i][coneTopoColuna + j] = 1;
-        }
+    // Navio 1: Horizontal (Linha 1, Colunas 1, 2, 3)
+    for (int j = 1; j <= TAMANHO_NAVIO; j++) {
+        tabuleiro[1][j] = CELULA_NAVIO;
     }
 
-    // 2. Habilidade em Cruz (Centro na linha 1, coluna 8)
-    int cruzLinha = 1, cruzCol = 8;
-    for (int i = 0; i < 5; i++) {
-        tabuleiro[cruzLinha][(cruzCol - 2) + i] = 1; // Eixo Horizontal
-        if (i < 3) tabuleiro[(cruzLinha - 1) + i][cruzCol] = 1; // Eixo Vertical
+    // Navio 2: Vertical (Coluna 7, Linhas 4, 5, 6)
+    for (int i = 4; i < 4 + TAMANHO_NAVIO; i++) {
+        tabuleiro[i][7] = CELULA_NAVIO;
     }
 
-    // 3. Habilidade em Octaedro (Centro na linha 8, coluna 8)
-    // Formato de diamante/losango
-    int octLinha = 8, octCol = 8;
-    for (int i = -1; i <= 1; i++) {
-        for (int j = -1; j <= 1; j++) {
-            // A condição de um octaedro/diamante simples: soma das distâncias <= 1
-            if (abs(i) + abs(j) <= 1) {
-                tabuleiro[octLinha + i][octCol + j] = 1;
-            }
-        }
+    // Navio 3: Diagonal Principal (Crescente: Linha e Coluna aumentam)
+    // Coordenada inicial: (2, 5) -> Ocupará (2, 5), (3, 6), (4, 7)
+    // Nota: Como o Navio 2 usa (4, 7), vamos ajustar para (2, 4) para evitar sobreposição.
+    int d1L = 2, d1C = 4;
+    for (int k = 0; k < TAMANHO_NAVIO; k++) {
+        tabuleiro[d1L + k][d1C + k] = CELULA_NAVIO;
+    }
+
+    // Navio 4: Diagonal Secundária (Decrescente: Linha aumenta, Coluna diminui)
+    // Coordenada inicial: (7, 2) -> Ocupará (7, 2), (8, 1), (9, 0)
+    int d2L = 7, d2C = 2;
+    for (int k = 0; k < TAMANHO_NAVIO; k++) {
+        tabuleiro[d2L + k][d2C - k] = CELULA_NAVIO;
     }
 
     // --- EXIBIÇÃO DO TABULEIRO ---
-    printf("     TABULEIRO FINAL (Navios: 3 | Habilidades: 1)\n\n");
+    printf("--- BATALHA NAVAL: NÍVEL AVENTUREIRO ---\n\n");
+
+    // Cabeçalho das colunas
     printf("    ");
-    for(int j = 0; j < TAM; j++) printf("%d ", j);
+    for (int j = 0; j < TAMANHO_TABULEIRO; j++) printf("%d ", j);
     printf("\n");
 
-    for (int i = 0; i < TAM; i++) {
-        printf("%d | ", i);
-        for (int j = 0; j < TAM; j++) {
+    // Linhas do tabuleiro
+    for (int i = 0; i < TAMANHO_TABULEIRO; i++) {
+        printf("%d | ", i); // Índice da linha
+        for (int j = 0; j < TAMANHO_TABULEIRO; j++) {
             printf("%d ", tabuleiro[i][j]);
         }
         printf("\n");
